@@ -5,9 +5,13 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
+//===新增
 var routes = require('./routes/index');
 var users = require('./routes/users');
-
+//=======
+//
 var app = express();
 
 // view engine setup
@@ -20,6 +24,20 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+//新增
+app.use(session({
+  secret: settings.cookieSecret,
+  key: settings.db,
+  cookie: { maxAge: 1000*60*60*24*30 }, //30天
+  store:new MongoStore({
+    db: settings.db,
+    host: settings.host,
+    port: settings.port
+  })
+}));
+//=====
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
