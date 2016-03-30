@@ -1,4 +1,5 @@
-//var express = require('express');
+var crypto = require('crypto');
+User = require('../models/user.js');
 //var router = express.Router();
 
 /* GET home page. */
@@ -18,6 +19,13 @@ module.exports = function(app){
 		res.render('register', { title: '註冊'});
 	});
 	app.post('/register', function(req, res){
+		var name = req.body.name,
+			password = req.body.password,
+			password_chk = req.body['password_check'];
+		if(password != password_chk){
+			req.flash('error', 'password is not same');
+			return res.redirect('/register');
+		}
 		//res.render('index', { title: 'main page'});
 	});
 	app.get('/login', function(req, res){
