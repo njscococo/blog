@@ -10,6 +10,8 @@ var MongoStore = require('connect-mongo')(session);
 //===新增
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var settings = require('./settings');
+var flash = require('connect-flash');
 //=======
 //
 var app = express();
@@ -17,6 +19,7 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+app.use(flash());
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -27,18 +30,20 @@ app.use(cookieParser());
 
 //新增
 app.use(session({
+  resave: '',
+  saveUninitialized: '',
   secret: settings.cookieSecret,
   key: settings.db,
   cookie: { maxAge: 1000*60*60*24*30 }, //30天
   store:new MongoStore({
-    db: settings.db,
-    host: settings.host,
-    port: settings.port
+    url: "mongodb://" + settings.host + "/" + settings.db
   })
 }));
 //=====
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+routes(app);
 
 app.use('/', routes);
 app.use('/users', users);

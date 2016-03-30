@@ -16,6 +16,7 @@
     "serve-favicon": "~2.3.0",
     "redis": "",
     "express-session": "",
-    "connect-mongo": ""
+    "connect-mongo": "~1.0.2",
+    "connect-flash": "0.1.1"
   }
 }
