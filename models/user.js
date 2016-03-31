@@ -33,12 +33,13 @@ User.prototype.save = function(callback) {
             //insert User data
             collection.insert(user, {
                 safe: true
-            }, function(err, result) {
+            }, function(err, user) {
             	mongodb.close();
             	if(err){
             		return callback(err);
             	}
-            	callback(null, restul[0]);
+            	//console.log("result[0]:", user);
+            	callback(null, user.ops[0]);
             });
         });
     });
@@ -50,12 +51,11 @@ User.get = function(name , callback){
 		if(err){
 			return callback(err);
 		}
-		db.collection('user', function(err, collection){
+		db.collection('users', function(err, collection){
 			if(err){
 				mongodb.close();
 				return callback(err);
 			}
-
 			//查詢user by Name
 			collection.findOne({name: name}, function(err, user){
 				mongodb.close();

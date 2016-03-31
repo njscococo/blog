@@ -11,10 +11,21 @@
 	</header>
 	<nav>
 		<span><a href="/" title="首頁">Home</a></span>
+		<% if(user){ %>
+		<span><a href="/post" title="發表">Post</a></span>
+		<span><a href="/logout" title="登出">Logout</a></span>
+		<% }else {%>
 		<span><a href="/login" title="登錄">Login</a></span>
 		<span><a href="/register" title="註冊">Register</a></span>
-		test
+		<% } %>
 	</nav>
 	<article>
+
+	<% if(success){	%>
+	<div><%= success %></div>
+	<% } %>
+	<% if(error){ %>
+	<div><%= error %></div>
+	<% } %>
 		
 	
