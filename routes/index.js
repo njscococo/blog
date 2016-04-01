@@ -9,7 +9,7 @@ module.exports = function(app) {
             success: req.flash('success').toString(),
             error: req.flash('error').toString()
         });
-        console.log('index:', req.session.user);
+        //console.log('index:', req.session.user);
     });
 
     app.get('/register', isLogin);
@@ -20,7 +20,7 @@ module.exports = function(app) {
             success: req.flash('success').toString(),
             error: req.flash('error').toString()
         });
-        console.log('register:', req.session.user);
+        //console.log('register:', req.session.user);
     });
 
     app.post('/register', isLogin);
@@ -107,12 +107,12 @@ module.exports = function(app) {
         //res.render('index', { title: 'main page'});
     });
 
-    app.get('/post', isLogin);
+    app.get('/post', isNotLogin);
     app.get('/post', function(req, res) {
         res.render('post', { title: '發表' });
     });
 
-    app.post('/post', isLogin);
+    app.post('/post', isNotLogin);
     app.post('/post', function(req, res) {
         //res.render('index', { title: 'main page'});
     });
