@@ -1,15 +1,21 @@
 var crypto = require('crypto');
 User = require('../models/user.js');
+Post = require('../models/post.js')
 
 module.exports = function(app) {
     app.get('/', function(req, res) {
-        res.render('index', {
-            title: '主頁',
-            user: req.session.user,
-            success: req.flash('success').toString(),
-            error: req.flash('error').toString()
+        Post.get(null, function(err, posts) {
+            if (err) {
+                posts = [];
+            }
+            res.render('index', {
+                title: '主頁',
+                user: req.session.user,
+                success: req.flash('success').toString(),
+                error: req.flash('error').toString(),
+                posts: posts
+            });
         });
-        //console.log('index:', req.session.user);
     });
 
     app.get('/register', isLogin);
@@ -50,7 +56,7 @@ module.exports = function(app) {
                 req.flash('error', 'user is duplicated');
                 return res.redirect('/register');
             }
-            console.log('success111:', user);
+            //console.log('success111:', user);
 
             //insert user
             newUser.save(function(err, user) {
@@ -60,7 +66,7 @@ module.exports = function(app) {
                 }
                 req.session.user = user;
 
-                console.log('success222:', user);
+                //console.log('success222:', user);
                 req.flash('success', '註冊成功');
                 res.redirect('/');
             });
@@ -81,29 +87,29 @@ module.exports = function(app) {
 
     app.post('/login', isLogin);
     app.post('/login', function(req, res) {
-    	var md5 = crypto.createHash('md5'),
-    		password = md5.update(req.body.password).digest('hex');
+        var md5 = crypto.createHash('md5'),
+            password = md5.update(req.body.password).digest('hex');
 
-    	User.get(req.body.name, function(err, user){
-    		if(err){
-    			req.flash('error', err);
-    			return res.redirect('/login');
-    		}
+        User.get(req.body.name, function(err, user) {
+            if (err) {
+                req.flash('error', err);
+                return res.redirect('/login');
+            }
 
-    		if(!user){
-    			req.flash('error', 'wrong name');
-    			return res.redirect('/login');
-    		}
+            if (!user) {
+                req.flash('error', 'wrong name');
+                return res.redirect('/login');
+            }
 
-    		if(user.password !== password){
-    			req.flash('error', '密碼錯了');
-    			return res.redirect('/login');
-    		}
+            if (user.password !== password) {
+                req.flash('error', '密碼錯了');
+                return res.redirect('/login');
+            }
 
-    		req.session.user = user;
-    		req.flash('success', 'Login Ok');
-    		res.redirect('/')
-    	});
+            req.session.user = user;
+            req.flash('success', 'Login Ok');
+            res.redirect('/');
+        });
         //res.render('index', { title: 'main page'});
     });
 
@@ -114,30 +120,41 @@ module.exports = function(app) {
 
     app.post('/post', isNotLogin);
     app.post('/post', function(req, res) {
-        //res.render('index', { title: 'main page'});
+        var curUser = req.session.user,
+            post = new Post(curUser.name, req.body.title, req.body.post);
+
+        post.save(function(err) {
+            if (err) {
+                req.flash('error', err);
+                return res.redirect('/');
+            }
+
+            req.flash('success', 'post success');
+            res.redirect('/');
+        });
     });
 
     app.get('/logout', isNotLogin);
     app.get('/logout', function(req, res) {
-    	res.session.user = null;
-    	req.flash('success', 'Logout');
-    	res.redirect('/');
+        req.session.user = null;
+        req.flash('success', 'Logout');
+        res.redirect('/');
         //res.render('post', { title: 'post page'});
     });
 
-    function isLogin(req, res, next){
-    	if(req.session.user){
-    		req.flash('error', 'you have Logined');
-    		res.redirect('back');
-    	}
-    	next();
+    function isLogin(req, res, next) {
+        if (req.session.user) {
+            req.flash('error', 'you have Logined');
+            res.redirect('back');
+        }
+        next();
     }
 
-    function isNotLogin(req, res, next){
-    	if(!req.session.user){
-    		req.flash('error', 'you have not Logined');
-    		res.redirect('/login');
-    	}
-    	next();
+    function isNotLogin(req, res, next) {
+        if (!req.session.user) {
+            req.flash('error', 'you have not Logined');
+            res.redirect('/login');
+        }
+        next();
     }
 };
