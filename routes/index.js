@@ -2,6 +2,17 @@ var crypto = require('crypto');
 User = require('../models/user.js');
 Post = require('../models/post.js')
 
+var multer = require('multer');
+//var upload = multer({dest: './public/images'});
+var storage = multer.diskStorage({
+	destination: './public/images',	
+	filename: function(req, file, cb){
+		cb(null, file.originalname);
+	}
+});
+
+var upload = multer({storage: storage});
+
 module.exports = function(app) {
     app.get('/', function(req, res) {
         Post.get(null, function(err, posts) {
@@ -113,9 +124,31 @@ module.exports = function(app) {
         //res.render('index', { title: 'main page'});
     });
 
+    app.get('/upload', isNotLogin);
+    app.get('/upload', function(req,res){
+    	res.render('upload', {
+            title: '上傳',
+            user: req.session.user,
+            success: req.flash('success').toString(),
+            error: req.flash('error').toString()
+        });
+    });
+
+    app.post('/upload', isNotLogin);
+    app.post('/upload', upload.single('file1'),  function(req,res){
+    	req.flash('success', 'upload success');
+    	res.redirect('/');
+    });
+
+
     app.get('/post', isNotLogin);
-    app.get('/post', function(req, res) {
-        res.render('post', { title: '發表' });
+    app.get('/post', function(req, res) {        
+        res.render('post', {
+            title: '發表',
+            user: req.session.user,
+            success: req.flash('success').toString(),
+            error: req.flash('error').toString()
+        });
     });
 
     app.post('/post', isNotLogin);
@@ -126,8 +159,10 @@ module.exports = function(app) {
         post.save(function(err) {
             if (err) {
                 req.flash('error', err);
+                console.log('post:', err);
                 return res.redirect('/');
             }
+
 
             req.flash('success', 'post success');
             res.redirect('/');

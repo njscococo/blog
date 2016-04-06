@@ -12,6 +12,8 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var settings = require('./settings');
 var flash = require('connect-flash');
+// var multer = require('multer');
+// var upload = multer({dest: './public/images'});
 //=======
 //
 var app = express();
@@ -20,12 +22,14 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(flash());
-
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 //app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+// app.use(multer({
+//   dest: './public/images'
+// }).array('multiIn'));
 app.use(cookieParser());
 
 //新增
