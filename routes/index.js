@@ -5,17 +5,17 @@ Post = require('../models/post.js')
 var multer = require('multer');
 //var upload = multer({dest: './public/images'});
 var storage = multer.diskStorage({
-	destination: './public/images',	
-	filename: function(req, file, cb){
-		cb(null, file.originalname);
-	}
+    destination: './public/images',
+    filename: function(req, file, cb) {
+        cb(null, file.originalname);
+    }
 });
 
-var upload = multer({storage: storage});
+var upload = multer({ storage: storage });
 
 module.exports = function(app) {
     app.get('/', function(req, res) {
-        Post.get(null, function(err, posts) {
+        Post.getAll(null, function(err, posts) {
             if (err) {
                 posts = [];
             }
@@ -125,8 +125,8 @@ module.exports = function(app) {
     });
 
     app.get('/upload', isNotLogin);
-    app.get('/upload', function(req,res){
-    	res.render('upload', {
+    app.get('/upload', function(req, res) {
+        res.render('upload', {
             title: '上傳',
             user: req.session.user,
             success: req.flash('success').toString(),
@@ -135,14 +135,74 @@ module.exports = function(app) {
     });
 
     app.post('/upload', isNotLogin);
-    app.post('/upload', upload.single('file1'),  function(req,res){
-    	req.flash('success', 'upload success');
-    	res.redirect('/');
+    app.post('/upload', upload.single('file1'), function(req, res) {
+        req.flash('success', 'upload success');
+        res.redirect('/');
+    });
+
+    //查詢某使用者之所有文章
+    app.get('/u/:name', function(req, res) {
+        User.get(req.params.name, function(err, user) {
+            if (!user) {
+                req.flash('error', '用戶不存在');
+                return res.redirect('/');
+            }
+
+            Post.getAll(user.name, function(err, posts) {
+                if (err) {
+                    req.flash('error', err);
+                    return res.redirect('/');
+                }
+
+                res.render('user', {
+                    title: user.name,
+                    posts: posts,
+                    user: req.session.user,
+                    success: req.flash('success').toString(),
+                    error: req.flash('error').toString()
+                });
+            });
+        });
+    });
+
+    //依條件查詢文章
+    app.get('/u/:name/:day/:title', function(req, res) {
+        Post.getOne(req.params.name, req.params.day, req.params.title, function(err, post) {
+            if (err) {
+                req.flash('error', err);
+                return res.redirect('/');
+            }
+            res.render('article', {
+                title: req.params.title,
+                post: post,
+                user: req.session.user,
+                success: req.flash('success').toString(),
+                error: req.flash('error').toString()
+            })
+        });
+    });
+
+    //編輯文章
+    app.get('/edit/:name/:day/:title', isNotLogin);
+    app.get('/edit/:name/:day/:title', function(req, res) {
+        Post.edit(req.params.name, req.params.day, req.params.title, function(err, post) {
+            if (err) {
+                req.flash('error', err);
+                return res.redirect('/');
+            }
+            res.render('edit', {
+                title: 'Edit',
+                post: post,
+                user: req.session.user,
+                success: req.flash('success').toString(),
+                error: req.flash('error').toString()
+            })
+        });
     });
 
 
     app.get('/post', isNotLogin);
-    app.get('/post', function(req, res) {        
+    app.get('/post', function(req, res) {
         res.render('post', {
             title: '發表',
             user: req.session.user,

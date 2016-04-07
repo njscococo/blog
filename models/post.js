@@ -1,84 +1,156 @@
 var mongodb = require('./db');
 var markdown = require('markdown').markdown;
 
-function Post(name, title, post){
-	this.name = name;
-	this.title = title;
-	this.post = post;
+function Post(name, title, post) {
+    this.name = name;
+    this.title = title;
+    this.post = post;
 }
 
 module.exports = Post;
 
 Post.prototype.save = function(callback) {
-	// body...
-	var date = new Date();
+    // body...
+    var date = new Date();
 
-	var time = {
-		date: date,
-		year: date.getFullYear(),
-		month: date.getFullYear() + "-" + (date.getMonth()+1),
-		day: date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate(),
-		minute: date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate() + " " + date.getHours() + ":" + (date.getMinutes() < 10 ? '0'+date.getMinutes() : date.getMinutes())
-	};
+    var time = {
+        date: date,
+        year: date.getFullYear(),
+        month: date.getFullYear() + "-" + (date.getMonth() + 1),
+        day: date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate(),
+        minute: date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " + date.getHours() + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes())
+    };
 
-	var post={
-		name: this.name,
-		time: time,
-		title: this.title,
-		post: this.post
-	};
+    var post = {
+        name: this.name,
+        time: time,
+        title: this.title,
+        post: this.post
+    };
 
-	mongodb.open(function(err, db){
-		if(err){
-			return callback(err);
-		}
-		//讀取post
-		db.collection('posts', function(err, collection){
-			if(err){
-				mongodb.close();
-				return callback(err);
-			}
+    mongodb.open(function(err, db) {
+        if (err) {
+            return callback(err);
+        }
+        //讀取post
+        db.collection('posts', function(err, collection) {
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
 
-			collection.insert(post, { safe: true}, function(err){
-				mongodb.close();
-				if(err){
-					return callback(err);	
-				}
-				callback(null);				
-			});
-		})
-	});
+            collection.insert(post, { safe: true }, function(err) {
+                mongodb.close();
+                if (err) {
+                    return callback(err);
+                }
+                callback(null);
+            });
+        })
+    });
 };
 
-Post.get = function(name, callback){
+Post.getAll = function(name, callback) {
+    mongodb.open(function(err, db) {
+        if (err) {
+            return callback(err);
+        }
+        //讀取post
+        db.collection('posts', function(err, collection) {
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
+
+            var query = {};
+            if (name) {
+                query.name = name;
+            }
+
+            collection.find(query).sort({
+                time: -1
+            }).toArray(function(err, docs) {
+                mongodb.close();
+                if (err) {
+                    return callback(err);
+                }
+                docs.forEach(function(doc) {
+                    doc.post = markdown.toHTML(doc.post);
+                });
+                callback(null, docs);
+            });
+        });
+    });
+};
+
+Post.getOne = function(name, day, title, callback) {
+    mongodb.open(function(err, db) {
+        if (err) {
+            return callback(err);
+        }
+
+        db.collection('posts', function(err, collection) {
+            if (err) {
+                mongodb.close();
+                callback(err);
+            }
+
+            //依輸入條件查詢
+            collection.findOne({
+                "name": name,
+                "time.day": day,
+                "title": title
+            }, function(err, doc) {
+                mongodb.close();
+                if (err) {
+                    return callback(err);
+                }
+                doc.post = markdown.toHTML(doc.post);
+                callback(null, doc);
+            });
+        });
+
+    });
+};
+
+Post.edit = function(name, day, title, callback) {
+    mongodb.open(function(err, db) {
+        if (err) {
+            return callback(err);
+        }
+
+        db.collection('posts', function(err, collection) {
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
+            collection.findOne({
+                "name": name,
+                "time.day": day,
+                "title": title
+            }, function(err, doc) {
+            	mongodb.close();
+            	if(err){
+            		return callback(err);
+            	}
+            	callback(null, doc);
+            });
+        });
+    });
+};
+
+Post.update = function(name, day, title, post, callback ){
 	mongodb.open(function(err, db){
 		if(err){
 			return callback(err);
 		}
-		//讀取post
 		db.collection('posts', function(err, collection){
 			if(err){
 				mongodb.close();
 				return callback(err);
 			}
-
-			var query = {};
-			if(name){
-				query.name = name;
-			}
-
-			collection.find(query).sort({
-				time: -1
-			}).toArray(function(err, docs){
-				mongodb.close();
-				if(err){					
-					return callback(err);
-				}
-				docs.forEach(function(doc){
-					doc.post = markdown.toHTML(doc.post);
-				});
-				callback(null, docs);
-			});
+			//更新文章
+			collection.upda
 		});
 	});
 }

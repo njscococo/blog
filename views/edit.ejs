@@ -1,0 +1,9 @@
+<%- include header %>
+	<form action="" method="post">
+    	標題：<br />
+        <input type="text" name="title" id="" value="<%= post.title%>"><br />
+        內文：<br />
+        <textarea name="post" id="" rows="20" cols="100"><%= post.post%></textarea><br />
+        <input type="submit" value="發表">
+    </form>
+<%- include footer %>
