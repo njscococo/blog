@@ -214,6 +214,21 @@ module.exports = function(app) {
         });
     });
 
+    app.get('/remove/:name/:day/:title', isNotLogin);
+    app.get('/remove/:name/:day/:title', function(req, res){
+        var currentUser = req.session.user;
+        Post.remove(currentUser.name, req.params.day, req.params.title, function (err) {
+            if(err){
+                req.flash('error', err);
+                res.redirect('back');
+            }
+            req.flash('success', '刪除成功');
+            res.redirect('/');
+        })
+
+    });
+
+
     app.get('/post', isNotLogin);
     app.get('/post', function(req, res) {
         res.render('post', {
