@@ -144,13 +144,54 @@ Post.update = function(name, day, title, post, callback ){
 		if(err){
 			return callback(err);
 		}
+        //讀取post集合
 		db.collection('posts', function(err, collection){
 			if(err){
 				mongodb.close();
 				return callback(err);
 			}
 			//更新文章
-			collection.upda
+			collection.update({
+                "name": name,
+                "time.day": day,
+                "title": title
+            }, {
+                $set: {post: post}
+            }, function (err) {
+                mongodb.close();
+                if(err){
+                    return callback(err);
+                }
+                callback(null);
+            });
 		});
 	});
+};
+
+Post.remove = function (name, day, title, callback) {
+    mongodb.open(function (err, db) {
+        if(err){
+            return callback(err);
+        }
+
+        db.collection('post', function(err, collection){
+            if(err){
+                mongodb.close();
+                return callback(err);
+            }
+            collection.remove({
+                "name": name,
+                "time.day": day,
+                "title": title
+            },{
+                w: 1
+            }, function(err){
+                mongodb.close();
+                if(err){
+                    return callback(err);
+                }
+                callback(null);
+            });
+        });
+    });
 }

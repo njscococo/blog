@@ -200,6 +200,19 @@ module.exports = function(app) {
         });
     });
 
+    app.post('/edit/:name/:day/:title', isNotLogin);
+    app.post('/edit/:name/:day/:title', function(req, res){
+        var currentUser = req.session.user;
+        Post.update(currentUser.name, req.params.day, req.params.title, req.body.post, function(err){
+            var url = encodeURI('/u/' + req.params.name + '/' + req.params.day + '/' + req.params.title);
+            if(err){
+                req.flash('error', err);
+                return res.redirect(url);
+            }
+            req.flash('success', '修改完成');
+            res.redirect(url);
+        });
+    });
 
     app.get('/post', isNotLogin);
     app.get('/post', function(req, res) {
